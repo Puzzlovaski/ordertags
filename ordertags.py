@@ -11,18 +11,20 @@ from docx.shared import Pt
 import re
 
 def add_logo(p):
-    p.add_run(text = 'ผู้ส่ง')
-    p.add_run(text = '\n')
     p.add_run().add_picture('./logo.jpg',width = Inches(2.5))
-    p.add_run(text = '\n')
     p.add_run(text = '\n')
 
 document = Document('./template.docx')
+style = document.styles['Normal']
+font = style.font
+font.size = Pt(12)
+font.name = 'Leelawadee UI'
 
 photos = open("photo.txt", "w", encoding="utf8")
 with open("input.txt", "r", encoding="utf8") as f:
     lines = f.readlines()
     p = document.add_paragraph('')
+    p.style = document.styles['Normal']
     p.paragraph_format.keep_together = True
     order = 0
     enter = False
@@ -30,43 +32,28 @@ with open("input.txt", "r", encoding="utf8") as f:
     for l in lines:
         print(l)
         if l == '\n':
-            if not enter:
-                if first_enter:
-                    p.add_run(text = '\n')
-                    first_enter = False
-                add_logo(p)
+            if first_enter:
+                first_enter = False
                 run = p.add_run(text = l)
-                run.font.name = 'Leelawadee UI'
-                run.font.size = Pt(14)
-                enter = True
         elif re.search("^[0-9][0-9]:[0-9][0-9].*\[Photo\]$",l) or re.search("^[0-9]:[0-9][0-9].*\[Photo\]$",l):
             photos.write(l)
         elif re.search("^[0-9][0-9]:[0-9][0-9]",l) or re.search("^[0-9]:[0-9][0-9]",l):
             order += 1
             p = document.add_paragraph('__________________________________'+str(order)+'\n')
+            p.style = document.styles['Normal']
             p.paragraph_format.keep_together = True
             run = p.add_run(text = l)
-            run.font.name = 'Leelawadee UI'
-            run.font.size = Pt(14)
             enter = False
             first_enter = True
         elif "ปลายทาง" in l :
             run = p.add_run(text = l)
-            run.font.name = 'Leelawadee UI'
-            run.font.size = Pt(14)
-            f = p.add_run(text= '\nCOD\n')
-            f.font.name = 'Leelawadee UI'
-            f.font.size = Pt(14)
+            f = p.add_run(text= '\nCOD')
             f.font.highlight_color = WD_COLOR.RED
             f.bold = True
-            enter = True
+        elif "ผู้รับ" in l:
             add_logo(p)
-            p.add_run(text = '\n')
-            
+            run = p.add_run(text= l).bold = True
         else :
             run = p.add_run(text= l)
-            run.font.name = 'Leelawadee UI'
-            run.font.size = Pt(14)
-            enter = False
 
 document.save('output.docx')
