@@ -11,7 +11,7 @@ from docx.shared import Pt
 import re
 
 def add_logo(p):
-    p.add_run().add_picture('./logo.jpg',width = Inches(2.5))
+    p.add_run().add_picture('./logo.jpg',width = Inches(2))
     p.add_run(text = '\n')
 
 document = Document('./template.docx')
